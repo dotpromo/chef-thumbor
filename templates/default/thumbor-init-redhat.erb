@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/bash
 
 # WARNING: This file is managed by Chef, any manual changes will be OVERWRITTEN.
 
@@ -26,6 +26,7 @@ DAEMON=`which thumbor`
 DAEMON_ARGS="-c ${CONFFILE} -i ${IP} -k ${KEYFILE}"
 PIDDIR=/var/run/$NAME
 USER=thumbor
+LOCKFILE=/var/lock/subsys/thumbor
 
 # Source function library.
 INITD=/etc/rc.d/init.d
@@ -37,66 +38,57 @@ INITD=/etc/rc.d/init.d
 # Read configuration variable file if it is present
 [ -r /etc/default/$NAME ] && . /etc/default/$NAME
 
-#Service must not be disabled
-if ! [ "$enabled" != "0" ] || [ "$force_start" = "1" ]; then 
-  echo "Thumbor service is desabled by /etc/default/$NAME"
-  exit 0
-fi
-
+RETVAL=0
 #
 # Function that starts the daemon/service
 #
-do_start()
+start()
 {
-  mkdir -p $PIDDIR
-  #Loop on all conf for PORTs
+  echo -n "Starting $NAME: "
+  touch /var/log/$NAME.log
+  chown $USER /var/log/$NAME.log
   for p in `echo $PORT | tr ',' ' '`; do
-    start-stop-daemon --start --quiet -b -m -c $USER --pidfile $PIDDIR/$p.pid --exec $DAEMON -- $DAEMON_ARGS -p $p || return 2
+    daemon --user $USER --pidfile $PIDDIR/$p.pid "nohup $DAEMON $DAEMON_ARGS -p ${p} 2>&1 1>/var/log/${NAME}-${p}.log &"
   done
+  RETVAL=$?
+  echo
+  [ $RETVAL = 0 ] && touch $LOCKFILE
+  return $RETVAL
 }
 
 #
 # Function that stops the daemon/service
 #
-do_stop()
+stop()
 {
-  ret=0
-  #Loop on all pids available
-  for i in $PIDDIR/*.pid; do
-    if [ -e $i ]; then
-      kill `cat $i`
-      if [ $? -ne 0 ]; then
-        ret=$?
-      fi
-      rm -f $i
-    fi
-  done
-  if [ "$ret" != 0 ]; then 
-    return 1
-  fi
+  echo -n "Stopping $NAME: "
+  killproc $NAME
+  RETVAL=$?
+  echo
+  [ $RETVAL = 0 ] && rm -f $LOCKFILE
+  return $RETVAL
 }
 
 case "$1" in
   start)
-	do_start
-	;;
+    start
+  ;;
   stop)
-	do_stop
-	;;
+    stop
+  ;;
   status)
-       status_of_proc "$DAEMON" "$NAME" && exit 0 || exit $?
-       ;;
+    status $NAME
+  ;;
   restart|force-reload)
-	#
-	# If the "reload" option is implemented then remove the
-	# 'force-reload' alias
-	#
-	do_stop
-	;;
+    stop
+    start
+  ;;
   *)
-	echo "Usage: $SCRIPTNAME {start|stop|status|restart|force-reload}" >&2
-	exit 3
-	;;
+  echo "Usage: $SCRIPTNAME {start|stop|status|restart|force-reload}" >&2
+  exit 3
+  ;;
 esac
 
-:
+exit $RETVAL
+
+# vim: ft=sh

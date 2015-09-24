@@ -19,7 +19,15 @@
 # limitations under the License.
 #
 
-include_recipe 'apt::default'
+if platform_family?('rhel')
+  include_recipe 'yum-repoforge::default'
+  include_recipe 'yum-epel::default'
+  include_recipe 'build-essential::default'
+elsif platform_family?('debian')
+  include_recipe 'apt::default'
+else
+  Chef::Application.fatal!('Unsupported platform')
+end
 include_recipe 'python::default'
 include_recipe 'thumbor::dependencies'
 include_recipe "thumbor::#{node['thumbor']['install_method']}"
@@ -32,9 +40,9 @@ service 'thumbor' do
   when 'upstart'
     provider Chef::Provider::Service::Upstart
   else
-    provider Chef::Provider::Service::Init
+    provider Chef::Provider::Service::Redhat
   end
-  supports restart: true, start: true, stop: true, reload: true, status: true
+  supports restart: true, start: true, stop: true, reload: true, status: true, enable: true
   service_name node['thumbor']['service_name']
   action [:enable, :start]
 end

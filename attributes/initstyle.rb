@@ -26,6 +26,7 @@ default['thumbor']['service_config_file'] = case node['platform_family']
                                               '/etc/default/thumbor'
                                             end
 
+
 default['thumbor']['work_dir'] = '/var/lib/thumbor'
 default['thumbor']['binary'] = case node['thumbor']['install_method']
                                when 'package'

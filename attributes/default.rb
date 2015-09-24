@@ -44,7 +44,6 @@ default['thumbor']['install_method'] = 'pip'
 
 default['thumbor']['source'] = "git+git://github.com/globocom/thumbor.git@#{node['thumbor']['version']}"
 
-default['thumbor']['init_style']     = 'upstart'
 default['thumbor']['listen_address'] = '127.0.0.1'
 
 # Install/Configure frontend proxy

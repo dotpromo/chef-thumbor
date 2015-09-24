@@ -4,22 +4,50 @@ default['thumbor']['pip_dependencies'] = ['remotecv', 'graphicsmagick-engine', '
 default['thumbor']['package_dependencies'] = %w(cmake git)
 
 # Add WebP support
-default['thumbor']['package_dependencies'] += %w(webp libwebp-dev)
+default['thumbor']['package_dependencies'] += if platform_family?('rhel')
+                                                %w(libwebp-tools libwebp-devel)
+                                              elsif platform_family?('debian')
+                                                %w(webp libwebp-dev)
+                                              end
 
 # GIFSICLE Engine support
-default['thumbor']['package_dependencies'] += %w(gifsicle libgif-dev)
+default['thumbor']['package_dependencies'] += if platform_family?('rhel')
+                                                %w(gifsicle giflib-devel)
+                                              elsif platform_family?('debian')
+                                                %w(gifsicle libgif-dev)
+                                              end
 
 # WebM support
-default['thumbor']['package_dependencies'] += %w(libvpx1 libvpx-dev)
+default['thumbor']['package_dependencies'] += if platform_family?('rhel')
+                                                %w(libvpx libvpx-devel)
+                                              elsif platform_family?('debian')
+                                                %w(libvpx1 libvpx-dev)
+                                              end
 
 # OpenCV support
-default['thumbor']['package_dependencies'] += %w(python-opencv)
+default['thumbor']['package_dependencies'] += if platform_family?('rhel')
+                                                %w(opencv-python)
+                                              elsif platform_family?('debian')
+                                                %w(python-opencv)
+                                              end
 
 # JPEG support
-default['thumbor']['package_dependencies'] += %w(libjpeg-dev)
+default['thumbor']['package_dependencies'] += if platform_family?('rhel')
+                                                %w(libjpeg-turbo-devel)
+                                              elsif platform_family?('debian')
+                                                %w(libjpeg-dev)
+                                              end
 
 # GraphicsMagick Engine
-default['thumbor']['package_dependencies'] += %w(python-pgmagick python-pycurl)
+default['thumbor']['package_dependencies'] += if platform_family?('rhel')
+                                                default['thumbor']['pip_dependencies'] += %w(pgmagick)
+                                                %w(GraphicsMagick-c++-devel boost-devel python-pycurl)
+                                              elsif platform_family?('debian')
+                                                %w(python-pgmagick python-pycurl)
+                                              end
+if platform_family?('rhel')
+  default['thumbor']['package_dependencies'] << 'zlib-devel'
+end
 
 # case node['platform_family']
 #   when 'debian', 'ubuntu'
