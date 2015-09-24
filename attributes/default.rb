@@ -24,7 +24,7 @@
 #
 # Releases: https://github.com/thumbor/thumbor/releases
 # Branches: https://github.com/thumbor/thumbor/branches
-default['thumbor']['version']      = '4.11.1'
+default['thumbor']['version']      = '5.1.0'
 
 default['thumbor']['package_name'] = 'thumbor'
 default['thumbor']['workers']      = node['cpu']['total']
