@@ -45,9 +45,11 @@ RETVAL=0
 start()
 {
   echo -n "Starting $NAME: "
-  touch /var/log/$NAME.log
-  chown $USER /var/log/$NAME.log
+  mkdir /var/log/$name
+  chow $USER /var/log/$NAME
   for p in `echo $PORT | tr ',' ' '`; do
+    touch /var/log/$NAME/$p.log
+    chown $USER /var/log/$NAME/$p.log
     daemon --user $USER --pidfile $PIDDIR/$p.pid "nohup $DAEMON $DAEMON_ARGS -p ${p} 2>&1 1>/var/log/${NAME}-${p}.log &"
   done
   RETVAL=$?
